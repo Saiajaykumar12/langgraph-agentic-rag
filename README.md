@@ -1,68 +1,82 @@
 # LangGraph Agentic RAG System
 
-An autonomous multi-agent system that plans what to retrieve, retrieves it, reasons over the result, and responds — without human steps in between.
+An autonomous AI agent built with LangGraph that decides *how* to retrieve
+information, reasons over it across multiple steps, and responds —
+moving beyond fixed RAG pipelines into true agentic behaviour.
 
-## What makes this agentic (not just RAG)
+## Basic RAG vs Agentic RAG
 
-Basic RAG: question → retrieve → answer (one fixed path)
+| | Basic RAG | Agentic RAG (this repo) |
+|---|---|---|
+| Retrieval | Always retrieves from vector store | Agent decides whether to retrieve, search web, or answer from memory |
+| Steps | Fixed: retrieve → generate | Dynamic: agent plans multi-step actions |
+| Tools | Single retriever | Multiple tools: retriever + web search + memory |
+| Control flow | Linear | Graph-based with conditional edges |
 
-This system: question → agent decides retrieval strategy → retrieves → evaluates quality → re-retrieves if needed → synthesises → answers
+## What's Inside
 
-The agent can use web search OR document retrieval depending on what the question needs. It chooses. That's the difference.
+| File | What It Covers |
+|------|---------------|
+| `basic_langgraph.ipynb` | LangGraph fundamentals — nodes, edges, state, conditional routing |
+| `basic_agents.ipynb` | Building agents with tool calling — how agents decide what action to take |
+| `agentic_rag.ipynb` | Full agentic RAG system — agent chooses between retrieval and web search |
+| `qna_chatbot_using_langgraph.py` | Stateful QnA chatbot with conversation memory using LangGraph |
+| `rag_agent.py` | Script version of the agentic RAG pipeline |
+| `google_search_engine.py` | Google search tool integration for real-time web retrieval |
 
-## Architecture
+## Agent Architecture
+User Question
+↓
+LangGraph Agent Node
+↓
+Agent decides action:
+├── Retrieve from vector store (for document questions)
+├── Search the web (for current/external information)
+└── Answer directly (if sufficient context in memory)
+↓
+Tool execution
+↓
+Agent evaluates result → loops back if more steps needed
+↓
+Final Answer
+## Key Concepts Demonstrated
 
-```
-User question
-     ↓
- LangGraph agent (state machine)
-     ↓
- Route: web search OR document retrieval
-     ↓
- Retrieve chunks / search results
-     ↓
- Evaluate relevance
-     ↓
- Re-route if low quality (self-correcting loop)
-     ↓
- Synthesise and respond
-```
+- **StateGraph** — how LangGraph manages agent state across multiple steps
+- **Conditional edges** — how the agent routes between tools based on reasoning
+- **Tool binding** — attaching retriever and web search as callable tools
+- **Memory** — maintaining conversation context across turns in the QnA chatbot
+- **Agentic loops** — agent re-invokes tools when initial retrieval is insufficient
 
-## Files
+## Tech Stack
 
-| File | What it does |
-|------|-------------|
-| `agentic_rag.ipynb` | Main agentic RAG system — start here |
-| `rag_agent.py` | Python script version of the RAG agent |
-| `qna_chatbot_using_langgraph.py` | QnA chatbot with memory using LangGraph |
-| `google_search_engine.py` | Web search tool integration |
-| `basic_langgraph.ipynb` | LangGraph fundamentals (nodes, edges, state) |
-| `basic_agents.ipynb` | Agent building basics |
-
-## Tech stack
-
-- LangGraph (agent orchestration, state machine)
-- LangChain (LLM chains, document loaders)
-- OpenAI GPT-4o (reasoning)
-- Groq LLaMA (fast inference)
-- Python
+| Tool | Role |
+|------|------|
+| LangGraph | Agent graph orchestration and state management |
+| LangChain | Document loading, splitting, retrieval chains |
+| OpenAI GPT | Reasoning and response generation |
+| Groq LLaMA | Alternative LLM for faster inference |
+| Google Search API | Real-time web retrieval tool |
+| FAISS | Vector store for document retrieval |
 
 ## Setup
 
 ```bash
+git clone https://github.com/Saiajaykumar12/langgraph-agentic-rag
+cd langgraph-agentic-rag
 pip install -r requirements.txt
+cp .env.example .env  # add your API keys
 ```
 
-Create a `.env` file:
-```
-OPENAI_API_KEY=your_key
-GROQ_API_KEY=your_key
-GOOGLE_API_KEY=your_key
-```
+Run notebooks in this order for best understanding:
+1. `basic_langgraph.ipynb`
+2. `basic_agents.ipynb`
+3. `agentic_rag.ipynb`
 
-Run `agentic_rag.ipynb` in Jupyter or VS Code.
+## Environment Variables
+OPENAI_API_KEY=your_openai_key
 
-## Related projects
+GROQ_API_KEY=your_groq_key
 
-- [RAG PDF Chatbot](https://github.com/Saiajaykumar12/langchain-rag-pdf-chatbot) — basic RAG without the agent layer
-- [SQL AI Chatbot](https://github.com/Saiajaykumar12/sql-ai-chatbot-langchain) — natural language to SQL
+GOOGLE_API_KEY=your_google_key
+
+GOOGLE_CSE_ID=your_custom_search_engine_id
